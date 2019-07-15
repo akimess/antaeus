@@ -57,7 +57,7 @@ class BillingService(
     fun processAllInvoices(): List<Invoice> {
         //Get all invoices with status PENDING
         val invoices = invoiceService.fetchByStatus(InvoiceStatus.PENDING)
-        return invoices.map { processInvoice(it) }.toList()
+        return processInvoices(invoices)
     }
 
 }
