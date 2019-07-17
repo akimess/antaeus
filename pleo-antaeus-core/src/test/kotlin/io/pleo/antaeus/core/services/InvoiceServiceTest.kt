@@ -1,6 +1,7 @@
 package io.pleo.antaeus.core.services
 
 import io.mockk.every
+import io.mockk.impl.annotations.RelaxedMockK
 import io.mockk.mockk
 import io.pleo.antaeus.core.exceptions.InvoiceNotFoundException
 import io.pleo.antaeus.data.AntaeusDal
@@ -18,7 +19,7 @@ class InvoiceServiceTest {
     private val dal = mockk<AntaeusDal> {
         every { fetchInvoice(404) } returns null
         every { fetchInvoice(200) } returns invoiceObj
-        every { updateInvoice(invoiceObj) } returns paidInvoiceObj
+        every { updateInvoice(paidInvoiceObj) } returns paidInvoiceObj
     }
 
     private val invoiceService = InvoiceService(dal = dal)
