@@ -8,7 +8,6 @@ import io.pleo.antaeus.core.exceptions.NetworkException
 import io.pleo.antaeus.core.exceptions.CurrencyMismatchException
 import io.pleo.antaeus.models.Money
 import mu.KotlinLogging
-import java.net.URL
 import java.time.LocalDateTime
 import java.util.*
 import kotlin.concurrent.schedule
@@ -37,7 +36,7 @@ class BillingService(
     }
 
     //Single Invoice Process
-    fun processInvoice(invoice: Invoice): Invoice {
+    private fun processInvoice(invoice: Invoice): Invoice {
 
         val processStatus: Boolean
         var invoiceStatus: InvoiceStatus
@@ -81,12 +80,12 @@ class BillingService(
     }
 
     //Batch Invoices Process
-    fun processInvoices(invoices: List<Invoice>): List<Invoice> {
+    private fun processInvoices(invoices: List<Invoice>): List<Invoice> {
         return invoices.map { processInvoice(it) }.toList()
     }
 
     //Get all Pending Invoices and Process
-    fun processAllInvoices(): List<Invoice> {
+    private fun processAllInvoices(): List<Invoice> {
         //Get all invoices with status PENDING
         val invoices = invoiceService.fetchByStatus(InvoiceStatus.PENDING)
         return processInvoices(invoices)
