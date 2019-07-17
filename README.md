@@ -8,44 +8,27 @@ Welcome to our challenge.
 
 As most "Software as a Service" (SaaS) companies, Pleo needs to charge a subscription fee every month. Our database contains a few invoices for the different markets in which we operate. Your task is to build the logic that will pay those invoices on the first of the month. While this may seem simple, there is space for some decisions to be taken and you will be expected to justify them.
 
-### Structure
-The code given is structured as follows. Feel free however to modify the structure to fit your needs.
-```
-├── pleo-antaeus-app
-|
-|       Packages containing the main() application. 
-|       This is where all the dependencies are instantiated.
-|
-├── pleo-antaeus-core
-|
-|       This is where you will introduce most of your new code.
-|       Pay attention to the PaymentProvider and BillingService class.
-|
-├── pleo-antaeus-data
-|
-|       Module interfacing with the database. Contains the models, mappings and access layer.
-|
-├── pleo-antaeus-models
-|
-|       Definition of models used throughout the application.
-|
-├── pleo-antaeus-rest
-|
-|        Entry point for REST API. This is where the routes are defined.
-└──
-```
+## Solution
 
-## Instructions
-Fork this repo with your solution. We want to see your progression through commits (don’t commit the entire solution in 1 step) and don't forget to create a README.md to explain your thought process.
+### Thought process explanation
+Haven't written in Kotlin before, but it's very familiar for me, because I have previously written in TypeScript and Go.  
+After working out the workflow of the application and what different functions return, I drew up a rough workflow of how the subscription process should work and what additional processes I need.  
 
-Please let us know how long the challenge takes you. We're not looking for how speedy or lengthy you are. It's just really to give us a clearer idea of what you've produced in the time you decided to take. Feel free to go as big or as small as you want.
+**Firstly** I started to work on Invoice Service and DAL to add needed functionality that I will be using later in the Billing Service. Also adding tests to some of those functions I created.  
+**Secondly** I programmed the Billing Service logic and added the schedule timer to it, so it will execute each month on the first day.  
+**Finally** I noticed that the external service "Payment Provider" can return several exceptions. Some of those exceptions can be dealt with and I decided to implement a solution for it, which I will explain down below. After finishing it, I have done some refactoring and testing to see if everything works as intended.
 
-Happy hacking 😁!
+### Exception Handling  
+Two exceptions from Payment Provider have caught my eye: **CurrencyMismatchException and NetworkException**.  
+Those two errors can be handled if we make some assumptions about the application and it's workflow.
+I have made several assumptions:
+1. If **NetworkException** returns, that means the external service is down temporarily and it can be reached later. Because of this, I added a solution that will retry the selected invoice again in an hour. This assumption presumes that this external service will not be down permanent and the invoice will be in "retry hell".
+2. If **CurrencyMismatchException** happens, this means that the Invoice has the **amount** in the wrong currency, as the Customer currency is different. This allows us to use an external API to get the rates for those currencies and convert the **amount** to the correct currency, after which we will try to process the invoice again.  
 
-## How to run
-```
-./docker-start.sh
-```
+#### Time taken: around 7 hours
+
+
+
 
 ## Libraries currently in use
 * [Exposed](https://github.com/JetBrains/Exposed) - DSL for type-safe SQL
@@ -53,3 +36,4 @@ Happy hacking 😁!
 * [kotlin-logging](https://github.com/MicroUtils/kotlin-logging) - Simple logging framework for Kotlin
 * [JUnit 5](https://junit.org/junit5/) - Testing framework
 * [Mockk](https://mockk.io/) - Mocking library
+* [Klaxon](https://github.com/cbeust/klaxon) - Library to parse JSON in Kotlin
