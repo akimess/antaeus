@@ -76,7 +76,7 @@ class BillingService(
 
         }
 
-        return invoice.copy(status = invoiceStatus)
+        return invoiceService.changeStatus(invoice, invoiceStatus)
     }
 
     //Batch Invoices Process
