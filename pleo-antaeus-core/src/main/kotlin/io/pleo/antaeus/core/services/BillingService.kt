@@ -1,10 +1,14 @@
 package io.pleo.antaeus.core.services
 
+import io.pleo.antaeus.core.convertCurrency
 import io.pleo.antaeus.core.external.PaymentProvider
 import io.pleo.antaeus.models.Invoice
 import io.pleo.antaeus.models.InvoiceStatus
 import io.pleo.antaeus.core.exceptions.NetworkException
+import io.pleo.antaeus.core.exceptions.CurrencyMismatchException
+import io.pleo.antaeus.models.Money
 import mu.KotlinLogging
+import java.net.URL
 import java.time.LocalDateTime
 import java.util.*
 import kotlin.concurrent.schedule
@@ -12,10 +16,10 @@ import kotlin.concurrent.scheduleAtFixedRate
 
 class BillingService(
     private val paymentProvider: PaymentProvider,
-    private val invoiceService: InvoiceService
+    private val invoiceService: InvoiceService,
+    private val customerService: CustomerService
 ) {
     private val logger = KotlinLogging.logger {}
-
 
     fun start(): TimerTask {
         return Timer("processAllInvoices", false)
@@ -54,6 +58,16 @@ class BillingService(
                     Timer("processInvoice", false).schedule(3600000){
                         processInvoice(invoice)
                     }
+                }
+                //Invalid Currency = Convert Currency
+                is CurrencyMismatchException -> {
+                    logger.error(exception) { "Invalid Currency in Invoice" }
+                    val customer = customerService.fetch(invoice.customerId)
+                    //Convert invoice currency to customer currency
+                    val newAmount = convertCurrency(invoice.amount.currency, customer.currency, invoice.amount.value)
+                    val newInvoice = invoice.copy(amount = Money(newAmount, customer.currency))
+                    //Charge again with new currency and amount
+                    return processInvoice(newInvoice)
                 }
                 else -> {
                     invoiceStatus = InvoiceStatus.ERROR

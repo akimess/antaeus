@@ -74,9 +74,8 @@ class AntaeusDal(private val db: Database) {
                     }
         }
 
-        return fetchInvoice(id)
-        }
-    }
+        return fetchInvoice(id!!)
+}
 
     fun fetchCustomer(id: Int): Customer? {
         return transaction(db) {
